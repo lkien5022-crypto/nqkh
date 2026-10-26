@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCam Studio – Virtual Lab Camera</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- A. Thanh điều hướng -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-flask-vial"></i>
+                </div>
+                <div class="brand-title">
+                    <h1>SmartCam Studio</h1>
+                    <span>Virtual Lab Camera & Media Station</span>
+                </div>
+            </div>
+            <div class="nav-controls">
+                <div class="connection-badge" id="connectionBadge">
+                    <span class="status-dot"></span>
+                    <span id="statusText">Chưa kết nối</span>
+                </div>
+                <button class="icon-btn" id="themeToggleBtn" title="Chuyển đổi giao diện sáng/tối">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <div class="workspace">
+            <!-- Left & Center: Camera Viewer & Controls -->
+            <div class="main-column">
+                <!-- B. Khu vực xem camera -->
+                <div class="viewer-card card">
+                    <div class="viewer-container" id="viewerContainer">
+                        <video id="cameraVideo" autoplay playsinline muted></video>
+                        <div class="camera-placeholder" id="cameraPlaceholder">
+                            <i class="fa-solid fa-video-slash"></i>
+                            <h3>Camera đang ngoại tuyến</h3>
+                            <p>Nhấn "Kết nối camera" bên dưới để khởi động thiết bị quang học số.</p>
+                        </div>
+                        <!-- Lưới quan sát thí nghiệm vật lý -->
+                        <div class="lab-grid-overlay" id="labGridOverlay"></div>
+                        <!-- Khung ngắm / Thước ngắm trang trí -->
+                        <div class="focus-reticle" id="focusReticle"></div>
+                        <!-- Badge đang ghi hình -->
+                        <div class="rec-badge" id="recBadge" style="display: none;">
+                            <span class="rec-dot"></span> REC <span id="recTimer">00:00</span>
+                        </div>
+                        <!-- Thanh công cụ nổi trên khung nhìn -->
+                        <div class="viewer-floating-tools">
+                            <button class="tool-chip" id="gridToggleBtn" title="Bật/tắt lưới căn chỉnh">
+                                <i class="fa-solid fa-border-all"></i> Lưới đo
+                            </button>
+                            <button class="tool-chip" id="flipToggleBtn" title="Lật hình ngang (Mirror)">
+                                <i class="fa-solid fa-arrows-split-up-and-left"></i> Lật ngang
+                            </button>
+                            <button class="tool-chip" id="fullscreenBtn" title="Toàn màn hình">
+                                <i class="fa-solid fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="viewer-footer-info">
+                        <span id="resolutionInfo">Độ phân giải: --</span>
+                        <span id="deviceInfo">Thiết bị: Chưa chọn</span>
+                    </div>
+                </div>
+
+                <!-- C. Bảng điều khiển camera -->
+                <div class="control-card card">
+                    <div class="settings-grid">
+                        <div class="control-group">
+                            <label for="cameraSelect"><i class="fa-solid fa-camera"></i> Nguồn Camera</label>
+                            <select id="cameraSelect" disabled>
+                                <option value="">Đang quét thiết bị...</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="resolutionSelect"><i class="fa-solid fa-sliders"></i> Độ phân giải mẫu</label>
+                            <select id="resolutionSelect" disabled>
+                                <option value="default">Mặc định hệ thống</option>
+                                <option value="hd">HD (1280 x 720)</option>
+                                <option value="fhd">Full HD (1920 x 1080)</option>
+                                <option value="vga">VGA (640 x 480)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons-row">
+                        <button class="btn btn-primary" id="connectBtn">
+                            <i class="fa-solid fa-power-off"></i> Kết nối camera
+                        </button>
+                        <button class="btn btn-danger" id="disconnectBtn" disabled>
+                            <i class="fa-solid fa-stop"></i> Ngắt kết nối
+                        </button>
+                        <div class="separator-vertical"></div>
+                        <button class="btn btn-accent" id="snapshotBtn" disabled>
+                            <i class="fa-solid fa-camera-retro"></i> Chụp ảnh
+                        </button>
+                        <button class="btn btn-success" id="recordBtn" disabled>
+                            <i class="fa-solid fa-circle-dot"></i> Quay video
+                        </button>
+                        <button class="btn btn-warning" id="stopRecordBtn" disabled style="display: none;">
+                            <i class="fa-solid fa-stop-circle"></i> Dừng quay
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: D. Khu vực quản lý tệp -->
+            <div class="sidebar-column card">
+                <div class="sidebar-header">
+                    <h3><i class="fa-solid fa-folder-open"></i> Quản lý Tệp</h3>
+                    <div class="sidebar-stats">
+                        <span id="fileCountBadge">0 tệp</span>
+                    </div>
+                </div>
+
+                <div class="media-tabs">
+                    <button class="tab-btn active" data-target="all">Tất cả</button>
+                    <button class="tab-btn" data-target="image">Ảnh chụp</button>
+                    <button class="tab-btn" data-target="video">Video ghi</button>
+                </div>
+
+                <div class="media-list-container" id="mediaListContainer">
+                    <div class="empty-state" id="emptyState">
+                        <i class="fa-solid fa-box-open"></i>
+                        <p>Chưa có dữ liệu ghi nhận trong phiên này. Hãy chụp ảnh hoặc quay video thí nghiệm.</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <button class="btn btn-outline btn-full" id="clearAllBtn" disabled>
+                        <i class="fa-solid fa-trash-can"></i> Xóa toàn bộ tệp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Modal Xem trước Media (Lightbox) -->
+    <div class="modal" id="previewModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-body" id="modalBody">
+                <!-- Nội dung preview động được chèn bằng JS -->
+            </div>
+            <div class="modal-footer">
+                <span id="modalMetaText" class="modal-meta"></span>
+                <a id="modalDownloadBtn" class="btn btn-primary" download><i class="fa-solid fa-download"></i> Tải xuống</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Canvas phục vụ chụp ảnh -->
+    <canvas id="snapshotCanvas" style="display: none;"></canvas>
+
+    <script src="script.js"></script>
+</body>
+</html>
